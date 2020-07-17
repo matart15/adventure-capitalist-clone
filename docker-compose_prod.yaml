@@ -1,0 +1,46 @@
+version: "3.2"
+services:
+  game_web:
+    container_name: game_web
+    build: ./web
+    restart: always
+    ports:
+      - 3000:3000
+    stdin_open: true
+  game_backend:
+    container_name: game_backend
+    build: ./backend
+    restart: always
+    ports:
+      - 4000:4000
+    environment:
+      - DATABASE_URL="mysql://root:game_mysql@prisma:3306/game"
+  game_mysql:
+    container_name: game_mysql
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: prisma
+      MYSQL_USER: root
+      MYSQL_PASSWORD: prisma
+    volumes:
+      - "./mysql/init:/docker-entrypoint-initdb.d"
+      - game_mysql:/var/lib/mysql
+    ports:
+      - 3306:3306
+  game_phpmyadmin:
+    container_name: game_phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=game_mysql
+      - PMA_USER=root
+      - PMA_PORT=3306
+      - PMA_PASSWORD=prisma
+    links:
+      - game_mysql
+    ports:
+      - 8080:80
+volumes:
+  game_mysql:

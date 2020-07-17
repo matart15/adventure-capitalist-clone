@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:prisma@localhost:3306/game"
+  // url      = "mysql://root:prisma@game_mysql:3306/game"
+  // url      = env("DATABASE_URL")
+}
+
+model Asset {
+  id               Int       @default(autoincrement()) @id
+  businessId       Int
+  price            Int       @default(0)
+  count            Int       @default(0)
+  totalCount       Int       @default(1)
+  profit           Int       @default(0)
+  profitDuration   Int       @default(0)
+  levelMaxCount    Int       @default(1)
+  level            Int       @default(0)
+  lastUseStartedAt DateTime? // if null it means asset not started running
+  userId           Int
+  managedAuto      Boolean   @default(false)
+  business         Business  @relation(fields: [businessId], references: [id])
+  user             User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, businessId], name: "Asset.userId_businessId")
+  @@index([businessId], name: "businessId")
+}
+
+model Business {
+  id                 Int     @default(autoincrement()) @id
+  name               String  @default("")
+  basePrice          Int
+  baseProfit         Int
+  baseLevelMaxCount  Int
+  baseProfitDuration Int     @default(0)
+  assets             Asset[]
+  managerName        String  @default("")
+  managerPrice       Int
+}
+
+model User {
+  id          Int      @default(autoincrement()) @id
+  money       Int      @default(0)
+  lastUpdated DateTime @default(now())
+  assets      Asset[]
+}
